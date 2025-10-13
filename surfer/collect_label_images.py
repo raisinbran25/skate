@@ -9,8 +9,11 @@ import re
 # --------- YOUR SETTINGS ---------
 BBOX = {'left': 206, 'top': 227, 'width': 512, 'height': 512}
 
+# "training" and "testing" to push images and bounding boxes to respective folders and csv
 IMG_DIR = Path("./surfer/surf_training_images")   # output image folder
-CSV_PATH = Path("./surfer/surf_data.csv")         # output CSV file
+CSV_PATH = Path("./surfer/surf_training_data.csv")         # output CSV file
+
+
 WINDOW   = "Surfer Label Tool"
 
 # --------- GLOBAL STATE ---------
@@ -123,6 +126,7 @@ def save_current():
             w = csv.writer(f)
             for (x1, y1, x2, y2) in rects:
                 cx, cy, bw, bh = to_center_wh(x1, y1, x2, y2)
+                cx /= 512; cy /= 512; bw /= 512; bh /= 512 
                 w.writerow([fname, f"{cx:.2f}", f"{cy:.2f}", f"{bw:.2f}", f"{bh:.2f}"])
                 wrote += 1
 
