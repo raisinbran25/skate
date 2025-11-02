@@ -9,7 +9,7 @@ import atexit
 # --- Global Configuration ---
 DIM = 416  # Target dimension (your CNN input size: DIM x DIM)
 OUTPUT_DIR = "single_surfer_recognition/training_photos" 
-FPS_TARGET = 5 # Frames per second to capture
+FPS_TARGET = 10 # Frames per second to capture
 IMG_EXTENSION = "jpg"
 # Keyboard keys for control
 START_KEY = 'q'
