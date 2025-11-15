@@ -28,14 +28,14 @@ MODEL_SAVE_PATH = 'single_surfer_recognition/student_model.pth'
 
 # Data Paths (Must match the paths used in the capture/label scripts)
 IMAGE_DIR = "single_surfer_recognition/training_photos"
-LABEL_CSV = "single_surfer_recognition/teacher_labels.csv"
+LABEL_CSV = "single_surfer_recognition/teacher_train_labels.csv"
 
 # Optional: List of filenames to include in training (e.g., ["00001.jpg", "00003.jpg"])
 # Leave this array empty [] to use NONE of the images.
 SELECTED_FILES = [] 
 
 # uncomment to train using first 2500 images
-for i in range(2500):
+for i in range(len(os.listdir(f"{IMAGE_DIR}"))):
     # FIX: Append the .jpg extension to match the actual file names
     SELECTED_FILES.append(f"{i:05d}.jpg")
 
@@ -329,6 +329,7 @@ def train_model():
 
     dataset = SurferDataset(IMAGE_DIR, LABEL_CSV, DIM, SELECTED_FILES, transform)
     
+    
     if len(dataset) == 0:
         print("Dataset is empty. Check paths and ensure SELECTED_FILES array is populated.")
         return
@@ -377,6 +378,7 @@ def train_model():
         print(f"\n--- Epoch {epoch+1} Finished | Avg Loss: {avg_epoch_loss:.4f} ---")
 
         # 4. Save Checkpoint
+
         if avg_epoch_loss < best_loss:
             best_loss = avg_epoch_loss
             torch.save(model.state_dict(), MODEL_SAVE_PATH)

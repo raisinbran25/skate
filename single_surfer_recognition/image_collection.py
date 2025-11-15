@@ -5,10 +5,11 @@ import keyboard
 import time
 import os
 import atexit
+import slide_filenames
 
 # --- Global Configuration ---
 DIM = 416  # Target dimension (your CNN input size: DIM x DIM)
-OUTPUT_DIR = "single_surfer_recognition/training_photos" 
+OUTPUT_FOLDERS = ["single_surfer_recognition/training_photos", "single_surfer_recognition/testing_photos"]
 FPS_TARGET = 10 # Frames per second to capture
 IMG_EXTENSION = "jpg"
 # Keyboard keys for control
@@ -54,22 +55,36 @@ def letterbox_resize(frame, dim):
 
 # --- Main Recording Logic ---
 
-def interactive_screen_recorder(target_dim, output_folder, fps_target, region):
+def interactive_screen_recorder(target_dim, fps_target, region, output_folders, img_extension, start_key, stop_key):
     """
     Starts and stops screen capture based on key presses.
     """
+    # choose to collect training or testing photos
+    def chooseFolder():
+        while True:
+            choice = input("enter 1 to collect training photos, and 2 for testing photos: ")
+            if choice == "1":
+                return output_folders[0]
+            if choice == "2":
+                return output_folders[1]
+            
+    output_folder = chooseFolder()
+
     os.makedirs(output_folder, exist_ok=True)
+
+    # slide filenames
+    slide_filenames.slide(output_folder)
     
     # Calculate initial frame counter based on existing files
-    frame_counter = len([f for f in os.listdir(output_folder) if f.endswith(IMG_EXTENSION)])
+    frame_counter = len([f for f in os.listdir(output_folder) if f.endswith(img_extension)])
     
     print("-" * 50)
     print("🌊 Surfer Detection Data Recorder")
     print(f"Target Size: {target_dim}x{target_dim} @ {fps_target} FPS")
     print(f"Recording Region: {region['width']}x{region['height']} at ({region['left']}, {region['top']})")
     print("-" * 50)
-    print(f"Press **{START_KEY.upper()}** to **START** recording.")
-    print(f"Press **{STOP_KEY.upper()}** to **STOP** recording.")
+    print(f"Press **{start_key.upper()}** to **START** recording.")
+    print(f"Press **{stop_key.upper()}** to **STOP** recording.")
     print(f"Press **CTRL+C** in the console to exit the script.")
     print("-" * 50)
 
@@ -93,8 +108,8 @@ def interactive_screen_recorder(target_dim, output_folder, fps_target, region):
             print("⏹️ Recording STOPPED. Ready for next clip.")
 
     # Register hotkeys
-    keyboard.on_press_key(START_KEY, start_recording_handler)
-    keyboard.on_press_key(STOP_KEY, stop_recording_handler)
+    keyboard.on_press_key(start_key, start_recording_handler)
+    keyboard.on_press_key(stop_key, stop_recording_handler)
 
     atexit.register(keyboard.unhook_all) # Ensure hotkeys are released on exit
 
@@ -115,7 +130,7 @@ def interactive_screen_recorder(target_dim, output_folder, fps_target, region):
                 
                 filename = os.path.join(
                     output_folder, 
-                    f"{frame_counter:05d}.{IMG_EXTENSION}"
+                    f"{frame_counter:05d}.{img_extension}"
                 )
                 
                 cv2.imwrite(filename, processed_frame)
@@ -141,4 +156,12 @@ def interactive_screen_recorder(target_dim, output_folder, fps_target, region):
 
 # --- Run the Script ---
 if __name__ == "__main__":
-    interactive_screen_recorder(DIM, OUTPUT_DIR, FPS_TARGET, MONITOR_REGION)
+    interactive_screen_recorder(
+        DIM, 
+        FPS_TARGET, 
+        MONITOR_REGION, 
+        OUTPUT_FOLDERS, 
+        IMG_EXTENSION, 
+        START_KEY, 
+        STOP_KEY
+    )

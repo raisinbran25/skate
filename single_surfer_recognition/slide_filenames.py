@@ -1,6 +1,6 @@
 import os
 
-def get_filenames(folder_path):
+def slide(folder_path):
     """
     Retrieves a list of filenames (excluding directories) from a specified folder.
 
@@ -24,10 +24,12 @@ def get_filenames(folder_path):
         print(f"Error: Folder not found at '{folder_path}'")
     except Exception as e:
         print(f"An error occurred: {e}")
-    return filenames
 
-namelist = get_filenames("single_surfer_recognition/training_photos")
+    for i in range(len(filenames)):
+        if (int(filenames[i][0:5]) != i):
+            os.rename(f"{folder_path}/{filenames[i]}", f"{folder_path}/{i:05d}.jpg")
 
-for i in range(len(namelist)):
-    if (int(namelist[i][0:5]) != i):
-        os.rename(f"single_surfer_recognition/training_photos/{namelist[i]}", f"single_surfer_recognition/training_photos/{i:05d}.jpg")
+    print("finished closing filename gaps.")
+
+if __name__ == "__main__":
+    slide("single_surfer_recognition/training_photos")

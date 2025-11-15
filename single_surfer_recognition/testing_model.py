@@ -22,15 +22,18 @@ LAMBDA_CONF = 1
 BATCH_SIZE = 16
 
 # Paths and Files
-MODEL_FILENAME = 'single_surfer_recognition/student_model.pth'  # The file containing your trained weights
-IMAGE_DIR = "single_surfer_recognition/training_photos" # Assuming test images are here too
+IMAGE_DIR = "single_surfer_recognition/testing_photos" # Assuming test images are here 
 LABEL_CSV = "single_surfer_recognition/teacher_labels.csv" # Ground truth labels for loss calculation
-OUTPUT_CSV = "single_surfer_recognition/student_model_boxes.csv" # Output CSV for predictions
+
+INPUT_OUTPUT = {    # model files, corresponding csv output names
+    "single_surfer_recognition/student_model.pth" : "single_surfer_recognition/student_labels.csv",
+    "single_surfer_recognition/random_model.pth" : "single_surfer_recognition/random_labels.csv"
+}
 
 # List of filenames to use for evaluation (e.g., test set files). 
 # Leave this array empty [] to use NONE of the images.
 SELECTED_FILES = [] 
-for i in range(2500, 3758):
+for i in range(len(os.listdir(f"{IMAGE_DIR}"))):
     SELECTED_FILES.append(f"{i:05d}.jpg")
 
 # Normalized Anchor Box Priors [w, h]
@@ -194,15 +197,15 @@ class YoloLoss(nn.Module):
 # --- 4. CUSTOM DATASET (Evaluation Version) ---
 
 class SurferEvalDataset(Dataset):
-    def __init__(self, image_dir, label_csv, dim, selected_files=None, transform=None):
+    def __init__(self, image_dir, LABEL_CSV, dim, selected_files=None, transform=None):
         self.image_dir = image_dir
         self.dim = dim
         self.transform = transform
         
         try:
-            self.labels_df = pd.read_csv(label_csv)
+            self.labels_df = pd.read_csv(LABEL_CSV)
         except FileNotFoundError:
-            print(f"FATAL ERROR: Label CSV not found at {label_csv}")
+            print(f"FATAL ERROR: Label CSV not found at {LABEL_CSV}")
             sys.exit(1)
             
         if not selected_files:
@@ -261,7 +264,7 @@ class SurferEvalDataset(Dataset):
 
 # --- 5. EVALUATION FUNCTION ---
 
-def evaluate_model():
+def evaluate_model(model_filename, output_csv):
     print(f"Using device: {DEVICE}")
 
     # 1. Setup DataLoader
@@ -276,10 +279,10 @@ def evaluate_model():
     # 2. Initialize Model and Load Weights
     model = SurferDetector(OUTPUT_DEPTH).to(DEVICE)
     try:
-        model.load_state_dict(torch.load(MODEL_FILENAME, map_location=DEVICE))
-        print(f"✅ Successfully loaded trained weights from {MODEL_FILENAME}.")
+        model.load_state_dict(torch.load(model_filename, map_location=DEVICE))
+        print(f"✅ Successfully loaded trained weights from {model_filename}.")
     except FileNotFoundError:
-        print(f"❌ Error: Model weights file not found at {MODEL_FILENAME}. Cannot evaluate.")
+        print(f"❌ Error: Model weights file not found at {model_filename}. Cannot evaluate.")
         sys.exit(1)
     
     # Set model to evaluation mode
@@ -323,13 +326,11 @@ def evaluate_model():
     
     # Save predictions to CSV
     df_pred = pd.DataFrame(inference_records, columns=['filename', 'x_center', 'y_center', 'width', 'height', 'confidence'])
-    df_pred.to_csv(OUTPUT_CSV, index=False)
+    df_pred.to_csv(output_csv, index=False)
     
-    print(f"✅ Predictions saved to: {OUTPUT_CSV}")
+    print(f"✅ Predictions saved to: {output_csv}")
 
-
-# --- Run the Script ---
-if __name__ == "__main__":
+def run():
     # Ensure torchvision's NMS utility is accessible
     try:
         # Check for torchvision import needed for NMS (often pre-installed with PyTorch for CUDA)
@@ -337,5 +338,13 @@ if __name__ == "__main__":
     except ImportError:
         print("❌ FATAL ERROR: This script requires 'torchvision' for NMS. Please install it.")
         sys.exit(1)
-        
-    evaluate_model()
+
+    for key, value in INPUT_OUTPUT.items():
+        input("press enter to continue: ")
+        evaluate_model(key, value)
+    
+
+
+# --- Run the Script ---
+if __name__ == "__main__":
+    run()

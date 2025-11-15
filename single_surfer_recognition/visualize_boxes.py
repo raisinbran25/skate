@@ -5,14 +5,14 @@ import sys
 import numpy as np
 
 # --- 1. CONFIGURATION ---
-IMAGE_DIR = "single_surfer_recognition/training_photos"
+IMAGE_DIR = "single_surfer_recognition/testing_photos"
 WINDOW_NAME = "Multi-Model Prediction QA Tool"
 
 # Define the paths for the three CSV sources
 LABEL_CSVS = {
-    "teacher": "single_surfer_recognition/teacher_labels.csv", # Green (Source of truth)
-    "student": "single_surfer_recognition/student_model_boxes.csv",  # Yellow (Trained model)
-    "random": "single_surfer_recognition/random_model_boxes.csv"    # Red (Untrained model)
+    "teacher": "single_surfer_recognition/teacher_test_labels.csv", # Green (Source of truth)
+    "student": "single_surfer_recognition/student_labels.csv",  # Yellow (Trained model)
+    "random": "single_surfer_recognition/random_labels.csv"    # Red (Untrained model)
 }
 
 # Define the Bounding Box Colors and VISIBILITY (BGR format for OpenCV)
@@ -30,9 +30,7 @@ ESC_KEY = 27 # ESC key to quit
 
 # Array of filenames to consider (Must match filenames in IMAGE_DIR)
 SELECTED_FILES = [] 
-
-# Example: Uncomment this loop to use the first 500 images for evaluation
-for i in range(2500, 3758):
+for i in range(len(os.listdir(f"{IMAGE_DIR}"))):
     SELECTED_FILES.append(f"{i:05d}.jpg")
 
 
